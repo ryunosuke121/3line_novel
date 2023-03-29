@@ -1,66 +1,90 @@
 import Layout from "@/components/Layout";
 import NovelBlock from "@/components/NovelBlock";
 import axios from "axios";
+import Link from 'next/link'
+import { ChatCompletionRequestMessage } from "openai";
 import { useState } from "react";
+import CreatePost from "./[id]";
 
-export type Novel ={
-    index: number,
-    content: string,
-    isAI: boolean
-}
 
-const CreatePost: React.FC = () => {
 
-    const [userText, setUserText] = useState("");
-    const [novels, setNovels] = useState<Novel[]>([]);
-    const userTextHandler = () => {
-        console.log(userText);
-        const newBlock = {
-            index: novels.length + 1,
-            content: userText,
-            isAI: false
+const ChoiceTheme: React.FC = () => {
+
+    const [choicedThemes, setchoicedThemes] = useState<string[]>([]);
+    const themes = ['ファンタジー', '宇宙', '歴史', '恋愛', 'お下烈', '宗教', 'SF', '官能', 'ホラー', 'BL', 'ミステリー', 'アクション', '戦争', 'ロボット', 'コメディ', '西部劇']
+    const [buttons, setButtons] = useState([...Array(themes.length)].map((_, i) => 'border-gray-400'));
+    const [userTheme, setUserTheme] = useState("");
+
+    const themeHandler = (theme: string) => {
+        const themeIndex = choicedThemes.findIndex(element => element === theme);
+        if (themeIndex === -1) {
+            setchoicedThemes((prevchoicedThemes) => ([...prevchoicedThemes, theme]));
+        } else {
+            setchoicedThemes((prevchoicedThemes) => ([...prevchoicedThemes.slice(0, themeIndex), ...prevchoicedThemes.slice(themeIndex + 1)]))
         }
-        setNovels((prevNovels) => ([...prevNovels, newBlock]));
-        getAiResponse(userText);
-        setUserText("");
     }
 
-    const getAiResponse = async (text: string) => {
-        const res = await axios.get('http://localhost:3333/api/openai',{
-            params: {
-                queryText: text
+
+    const toggleButton = (i: number) => {
+        setButtons((prevButtons) => prevButtons.map((button, j) => {
+            if (i === j) {
+                if (button === 'border-gray-400') {
+                    return 'border-blue-500';
+                } else {
+                    return 'border-gray-400';
+                }
+            } else {
+                return button;
             }
-        })
-
-        console.log(res);
+        }))
     }
-    
+    console.log(choicedThemes.join(',') + userTheme);
+
     return (
         <Layout>
-            <div className="container mx-auto px-4">
-                <div className="container mx-auto md:max-w-5xl">
-                    {novels.map(({index, content, isAI}) => (
-                        <NovelBlock
-                            key = {index}
-                            index = {index}
-                            content = {content}
-                            isAI = {isAI}
-                        />
-                    ))}
-                </div>
-                <div className="absolute inset-x-0 bottom-4 flex flex-col items-center p-2 max-w-5xl mx-auto">
-                    <textarea 
-                        className="h-20 bg-gray-50 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-[80%] p-2.5" 
-                        placeholder="文章を追加"
-                        value={userText} 
-                        onChange={(e)=>{setUserText(e.target.value)}}/>
-                    <button className="inline-block bg-green-500 hover:bg-red-500 text-white rounded px-8 py-2 ml-4 mt-2" onClick={userTextHandler}>
-                        追加
-                    </button>
+            <div className="container flex justify-center h-screen">
+                <div className="container mx-auto bg-white border border-gray-300 max-w-2xl rounded shadow p-4 my-3 h-[70%]" >
+                    <div className="mx-auto text-center p-2 font-semibold text-2xl border-b border-gray-300 mb-5">小説のテーマを決める</div>
+                    <div className="p-3">
+                        <div className="flex justify-center mx-auto text-center p-2 font-medium text-xl">テーマを選択&nbsp;<span className="text-sm">※複数選択可能</span></div>
+                        <div className="p-2 text-center border rounded">
+                            {themes.map((theme, i) => (
+                                <button
+                                    className={`bg-white hover:bg-gray-100 text-gray-800 m-2 font-semibold py-2 px-4 border ${buttons[i]} rounded shadow `}
+                                    key={i}
+                                    onClick={() => {
+                                        themeHandler(theme);
+                                        toggleButton(i);
+                                    }}
+                                >
+                                    {theme}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mx-auto text-center p-2 font-medium text-xl mt-4">自作のテーマを追加</div>
+                        <input
+                            type="text"
+                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500
+                                    focus:border-blue-500 block w-full p-2.5 shadow"
+                            placeholder="入力例：青春, 野球, サスペンス"
+                            value={userTheme}
+                            onChange={(e) => setUserTheme(e.target.value)}
+                        /></div>
+
+                    <div className="text-center mt-2">
+                        <Link
+                            as={`/create/1`}
+                            href={{ pathname: '/create/1', query: { theme: choicedThemes.join(',') + (userTheme !=='' ? (','+ userTheme): '') } }}
+                        >
+                            <button className="bg-green-500 hover:bg-green-400 text-white m-2 font-semibold py-2 px-4 border rounded shadow ">
+                                作成する
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </Layout>
     );
 }
 
-export default CreatePost;
+export default ChoiceTheme;

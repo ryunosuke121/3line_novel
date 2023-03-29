@@ -1,18 +1,31 @@
-import {Novel} from '../pages/create/index';
+import { ChatCompletionRequestMessage } from 'openai';
+import Image from 'next/legacy/image';
 
 
-const NovelBlock:React.FC<Novel> = ({index, content, isAI}) => {
+
+const NovelBlock: React.FC<ChatCompletionRequestMessage> = ({ role, content }) => {
     let headText = ''
-    if(isAI){
-        headText = 'AI'
-    } else {
+    if (role === 'user') {
         headText = 'あなた'
+    } else {
+        headText = 'AI'
     }
 
     return (
-        <div className='w-full border border-gray-300 bg-white rounded p-2 flex flew-row my-2'>
-            <div className='text-green-500 min-w-[10%]'>{headText}</div>
-            <div className='ml-3'>{content}</div>
+        <div className='w-full border border-gray-300 bg-white rounded p-2 flex my-2 items-start'>
+            {role === 'assistant' ? (
+                <>
+                    <img src='/AI.png' alt={headText} style={{width: 60, height: 60}} className="block"/>
+                    <div className='ml-auto w-[90%] p-2'>{content}</div>
+                </>) : (<></>)
+            }
+
+            {role === 'user' ? (
+                <>
+                    <div className='mx-2 max-w-[90%] p-2'>{content}</div>
+                    <img src='/dazai_osamu.png' alt={headText} style={{width: 60, height: 60}} className="block ml-auto" />
+                </>
+            ) : (<></>)}
         </div>
     );
 }
