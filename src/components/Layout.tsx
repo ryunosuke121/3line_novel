@@ -19,7 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
       </Head>
         <Header />
         <main>
-          <div className='container mx-auto p-2'>
+          <div className='container mx-auto p-2 pt-16'>
             {children}
           </div>
         </main>

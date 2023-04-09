@@ -12,7 +12,7 @@ const NovelBlock: React.FC<ChatCompletionRequestMessage> = ({ role, content }) =
     }
 
     return (
-        <div className='w-full border border-gray-300 bg-white rounded p-2 flex my-2 items-start'>
+        <div className='w-full border border-gray-300 bg-white bg-opacity-80 rounded p-2 flex my-2 items-start'>
             {role === 'assistant' ? (
                 <>
                     <img src='/AI.png' alt={headText} style={{width: 60, height: 60}} className="block"/>

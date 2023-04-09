@@ -3,10 +3,10 @@ import Image from 'next/image';
 const Header = () => {
     return (
         <header>
-          <nav className="bg-blue-400 border-gray-200 px-4 lg:px-6 py-2.5 shadow">
+          <nav className="fixed top-0 bg-gradient-to-r from-blue-300 to-blue-500 border-gray-200 px-4 lg:px-6 py-2.5 shadow w-full">
             <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
               <Link href="/" className="flex items-center">
-                <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">小説メーカー</span>
+                <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">ワクワク小説クリエイター</span>
               </Link>
               <div className="flex items-center lg:order-2">
                 <Link href="/" className="text-white border border-white hover:text-gray-200 hover:border-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 ">ログイン</Link>

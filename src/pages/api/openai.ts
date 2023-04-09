@@ -16,17 +16,16 @@ const handler = async (req: any) => {
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
-      {role: "system", content: `今から大体100文字ずつ交代で小説の続きを書くゲームをしましょう。テーマは${theme}です。` },
+      {role: "system", content: `交代で小説の続きを書くゲームをします。日本語で100文字書いたら交代です。文字数をオーバーしすぎないようにしてください。小説のテーマは${theme}です。` },
       ...message
     ],
     temperature: 0.9,
-    max_tokens: 500,
+    max_tokens: 2000,
     stream: true
   }
 
   const stream = await OpenAIStream(payload);
   return new Response(stream)
-  //res.status(200).json({answer: response.data.choices[0].message})
 }
 
 export default handler;

@@ -1,85 +1,136 @@
 import Layout from "@/components/Layout";
 import NovelBlock from "@/components/NovelBlock";
 import axios from "axios";
-import Link from 'next/link'
+import { useRouter } from "next/router";
 import { ChatCompletionRequestMessage } from "openai";
-import { useState } from "react";
-import CreatePost from "./[id]";
+import { useEffect, useState } from "react";
+
+export type Novel = {
+    index: number,
+    content: string,
+    isAI: boolean
+}
+
+export type CreatePostProps = {
+    theme: string[]
+}
+
+const CreatePost: React.FC<CreatePostProps> = () => {
+
+    const router = useRouter();
+    const theme = router.query.theme;
+    const isAiFirst = router.query.isAiFirst;
+    const [userText, setUserText] = useState("");
+    const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
 
 
-
-const ChoiceTheme: React.FC = () => {
-
-    const [choicedThemes, setchoicedThemes] = useState<string[]>([]);
-    const themes = ['ファンタジー', '宇宙', '歴史', '恋愛', 'お下烈', '宗教', 'SF', '官能', 'ホラー', 'BL', 'ミステリー', 'アクション', '戦争', 'ロボット', 'コメディ', '西部劇']
-    const [buttons, setButtons] = useState([...Array(themes.length)].map((_, i) => 'border-gray-400'));
-    const [userTheme, setUserTheme] = useState("");
-
-    const themeHandler = (theme: string) => {
-        const themeIndex = choicedThemes.findIndex(element => element === theme);
-        if (themeIndex === -1) {
-            setchoicedThemes((prevchoicedThemes) => ([...prevchoicedThemes, theme]));
-        } else {
-            setchoicedThemes((prevchoicedThemes) => ([...prevchoicedThemes.slice(0, themeIndex), ...prevchoicedThemes.slice(themeIndex + 1)]))
+    //ユーザーがテキストを追加したときに呼び出される関数
+    const pushUserText = async () => {
+        const newMessage: ChatCompletionRequestMessage = {
+            role: 'user',
+            content: `${userText}`
         }
+        setMessages((prevMessages) => ([...prevMessages, newMessage]))
+        setUserText("");
+        const aiResponse = await postMessageToAi([...messages, newMessage]);
+        setResponseText('');
+        setMessages((prevMessages) => ([...prevMessages, { 'role': 'assistant', 'content': aiResponse! }]));
     }
 
+    const [responseText, setResponseText] = useState('');
 
-    const toggleButton = (i: number) => {
-        setButtons((prevButtons) => prevButtons.map((button, j) => {
-            if (i === j) {
-                if (button === 'border-gray-400') {
-                    return 'border-blue-500';
-                } else {
-                    return 'border-gray-400';
-                }
-            } else {
-                return button;
-            }
-        }))
+    //AI生成ボタンを押した時の処理
+    const generateAiText = async () => {
+        const newMessage: ChatCompletionRequestMessage = {
+            role: 'user',
+            content: 'あなたが作成してください'
+        }
+        const aiResponse = await postMessageToAi([...messages, newMessage]);
+        setResponseText('');
+        setMessages((prevMessages) => ([...prevMessages, { 'role': 'assistant', 'content': aiResponse! }]));
     }
-    console.log(choicedThemes.join(',') + userTheme);
+
+    //AIにメッセージを送信する関数
+    const postMessageToAi = async (message: ChatCompletionRequestMessage[]) => {
+        const response = await fetch("/api/openai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                message, theme
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        const data = response.body;
+        if (!data) {
+            return;
+        }
+        const reader = data.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let aiResponse: string = '';
+
+        while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            const chunkValue = decoder.decode(value);
+            aiResponse += chunkValue;
+            setResponseText(aiResponse);
+        }
+
+        return aiResponse;
+    }
+
+    const finishWriting = async () => {
+        
+    }
+
+    useEffect(() => {
+        if (isAiFirst === 'true') {
+            generateAiText();
+            console.log('ai first');
+        }
+    },[]);
 
     return (
         <Layout>
-            <div className="container flex justify-center h-screen">
-                <div className="container mx-auto bg-white border border-gray-300 max-w-2xl rounded shadow p-4 my-3 h-[70%]" >
-                    <div className="mx-auto text-center p-2 font-semibold text-2xl border-b border-gray-300 mb-5">小説のテーマを決める</div>
-                    <div className="p-3">
-                        <div className="flex justify-center mx-auto text-center p-2 font-medium text-xl">テーマを選択&nbsp;<span className="text-sm">※複数選択可能</span></div>
-                        <div className="p-2 text-center border rounded">
-                            {themes.map((theme, i) => (
-                                <button
-                                    className={`bg-white hover:bg-gray-100 text-gray-800 m-2 font-semibold py-2 px-4 border ${buttons[i]} rounded shadow `}
-                                    key={i}
-                                    onClick={() => {
-                                        themeHandler(theme);
-                                        toggleButton(i);
-                                    }}
-                                >
-                                    {theme}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="mx-auto text-center p-2 font-medium text-xl mt-4">自作のテーマを追加</div>
-                        <input
-                            type="text"
-                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500
-                                    focus:border-blue-500 block w-full p-2.5 shadow"
-                            placeholder="入力例：青春, 野球, サスペンス"
-                            value={userTheme}
-                            onChange={(e) => setUserTheme(e.target.value)}
-                        /></div>
-
-                    <div className="text-center mt-2">
-                        <Link
-                            as={`/create/1`}
-                            href={{ pathname: '/create/1', query: { theme: choicedThemes.join(',') + (userTheme !=='' ? (','+ userTheme): '') } }}
-                        >
-                            <button className="bg-green-500 hover:bg-green-400 text-white m-2 font-semibold py-2 px-4 border rounded shadow ">
-                                作成する
-                            </button>
-                        </Link>
+            <div className="container mx-auto px-4">
+                <div className="container mx-auto md:max-w-5xl mb-96 ">
+                        {messages.map(({ role, content }, index) => (
+                            <NovelBlock
+                                key={index}
+                                role={role}
+                                content={content}
+                            />
+                        ))}
+                        {responseText === '' ? <></> : <NovelBlock
+                            role={'assistant'}
+                            content={responseText}
+                        />}
+                </div>
+                <div className="fixed inset-x-0 bottom-4 flex flex-col items-center p-2 w-[100%]">
+                    <div className="flex flex-wrap justify-center items-center w-[80%] mx-auto">
+                        <textarea
+                            className="h-20 bg-white bg-opacity-80 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full lg:max-w-[80%] p-2.5 "
+                            placeholder="文章を追加"
+                            value={userText}
+                            onChange={(e) => { setUserText(e.target.value) }} />
+                        <button className="inline-block bg-gradient-to-r from-green-400 to-green-500 hover:from-green-300 hover:to-green-400 text-white rounded px-8 ml-4 mt-2 lg:mt-0 w-24 h-12" onClick={pushUserText}>
+                            追加
+                        </button>
+                    </div>
+                    <div>
+                        <button className="inline-block bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-300 hover:to-blue-400 text-white rounded px-8 py-2 ml-4 mt-2" onClick={generateAiText}>
+                            AI生成
+                        </button>
+                        <button className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white rounded px-8 py-2 ml-4 mt-2" onClick={generateAiText}>
+                            完成！
+                        </button>
                     </div>
                 </div>
             </div>
@@ -87,4 +138,4 @@ const ChoiceTheme: React.FC = () => {
     );
 }
 
-export default ChoiceTheme;
+export default CreatePost;
