@@ -1,14 +1,23 @@
 import Layout from '@/components/Layout'
 import { ChatCompletionRequestMessage } from 'openai';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { getNovel } from '@/lib/Novel';
 
 
 
 
 export const Editor:React.FC = () => {
     const router = useRouter();
-    const messages: ChatCompletionRequestMessage[] = router.query!.messages;
+    const postId: number = router.query.id ? parseInt(router.query.id as string, 10) : 0;
+    const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+    
+    useEffect(() => {
+        getNovel(postId).then((res) => {
+            setMessages(res.)
+    })
+    }, [])
+
     const [text, setText] = useState(() => {
         let text = '';
         messages.forEach((message:ChatCompletionRequestMessage) => {
