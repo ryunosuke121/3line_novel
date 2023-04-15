@@ -3,6 +3,7 @@ import NovelBlock from "@/components/NovelBlock";
 import axios from "axios";
 import Link from 'next/link'
 import { ChatCompletionRequestMessage } from "openai";
+import React from "react";
 import { useState } from "react";
 import { isInt8Array } from "util/types";
 

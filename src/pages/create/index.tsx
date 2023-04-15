@@ -4,6 +4,8 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { ChatCompletionRequestMessage } from "openai";
 import { useEffect, useState } from "react";
+import Link from 'next/link';
+import React from "react";
 
 export type Novel = {
     index: number,
@@ -128,9 +130,9 @@ const CreatePost: React.FC<CreatePostProps> = () => {
                         <button className="inline-block bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-300 hover:to-blue-400 text-white rounded px-8 py-2 ml-4 mt-2" onClick={generateAiText}>
                             AI生成
                         </button>
-                        <button className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white rounded px-8 py-2 ml-4 mt-2" onClick={generateAiText}>
-                            完成！
-                        </button>
+                        <Link as={'/edit'} href={{pathname: '/edit', query: {messages: messages.toString()}}} className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white rounded px-8 py-2 ml-4 mt-2">
+                            編集する
+                        </Link>
                     </div>
                 </div>
             </div>
