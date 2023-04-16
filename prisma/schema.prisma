@@ -19,9 +19,17 @@ model User {
 }
 
 model Post {
-  id       Int   @id @default(autoincrement())
-  author   User? @relation(fields: [authorId], references: [id])
-  authorId Int
-  title String
-  content String
+  id        Int           @id @default(autoincrement())
+  author    User?         @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime      @default(now())
+  title     String
+  content   ChatMessage[]
+}
+
+model ChatMessage {
+  id      Int    @id @default(autoincrement())
+  post    Post?  @relation(fields: [PostId], references: [id])
+  PostId  Int
+  message String @db.LongText
 }
