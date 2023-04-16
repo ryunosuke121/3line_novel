@@ -6,7 +6,6 @@ export const postNovel = async (messages: ChatCompletionRequestMessage[], title:
     const response = await axios.post('/api/post', {
         messages, title
     });
-    console.log(response);
     return response
 }
 

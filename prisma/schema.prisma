@@ -31,5 +31,5 @@ model ChatMessage {
   id      Int    @id @default(autoincrement())
   post    Post?  @relation(fields: [PostId], references: [id])
   PostId  Int
-  message String
+  message String @db.LongText
 }

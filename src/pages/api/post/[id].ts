@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const prisma = new PrismaClient();
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const postId = req.query.id
     const postWithContents = await prisma.post.findUnique({
         where: {
@@ -13,4 +13,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             content: true
         }
     });
+
+    return res.status(200).json(postWithContents);
 }
+
+export default handler;

@@ -14,7 +14,8 @@ export const Editor:React.FC = () => {
     
     useEffect(() => {
         getNovel(postId).then((res) => {
-            setMessages(res.)
+            console.log(res);
+            setMessages(res.data.content);
     })
     }, [])
 

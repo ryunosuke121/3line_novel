@@ -12,7 +12,7 @@ interface PostRequest extends NextApiRequest {
 
 const prisma = new PrismaClient();
 
-const handler = async (req: PostRequest, res: NextApiResponse) => {
+export const handler = async (req: PostRequest, res: NextApiResponse) => {
     const { messages, title } = req.body;
     const result = prisma.post.create({
         data: {
@@ -28,5 +28,7 @@ const handler = async (req: PostRequest, res: NextApiResponse) => {
         }
     })
 
-    return res.status(201).json(result)
+    return res.status(201).json({result:result, id: (await result).id})
 }
+
+export default handler;
